@@ -11,7 +11,7 @@ import { ImageWithFallback } from "../components/figma/ImageWithFallback";
 export function Product() {
   const { productId } = useParams();
   const product = getProductById(productId || "");
-  const { addToCart } = useCart();
+  const { addToCart, setIsCartOpen } = useCart();
 
   const [selectedSize, setSelectedSize] = useState("");
   const [quantity, setQuantity] = useState(1);
@@ -48,6 +48,8 @@ export function Product() {
       size: selectedSize,
       quantity,
     });
+
+    setIsCartOpen(true);
 
     toast.success("Producto agregado correctamente", {
       action: {
