@@ -6,10 +6,14 @@ import { ProductCard } from "../components/ProductCard";
 import { ProductSkeleton } from "../components/ProductSkeleton";
 import { products } from "../data/products";
 import { Slider } from "../components/Slider";
+import { useRef } from "react";
 
 export function Category() {
+  const timeoutRef = useRef<NodeJS.Timeout | null>(null);
+
   const { categoryName } = useParams();
   const [loading, setLoading] = useState(true);
+  const [isInitialLoad, setIsInitialLoad] = useState(true);
   const [filteredProducts, setFilteredProducts] = useState(products);
   const [sortBy, setSortBy] = useState("popularity");
   const [priceRange, setPriceRange] = useState([0, 2000]);
@@ -18,9 +22,18 @@ export function Category() {
   const [inStockOnly, setInStockOnly] = useState(false);
 
   useEffect(() => {
-    // Simulate loading
+    // Clear any existing timeout
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current);
+    }
+
+    // Set initial load if category changed
+    const isCategoryChange = !timeoutRef.current; 
+    if (isCategoryChange) setIsInitialLoad(true);
+    
     setLoading(true);
-    setTimeout(() => {
+
+    timeoutRef.current = setTimeout(() => {
       let filtered = categoryName === "novedades" 
         ? products 
         : products.filter((p) => p.category === categoryName?.toLowerCase());
@@ -55,16 +68,21 @@ export function Category() {
           filtered.sort((a, b) => b.price - a.price);
           break;
         case "newest":
-          // Keep original order for newest
           break;
         default:
-          // popularity - keep original order
           break;
       }
 
       setFilteredProducts(filtered);
       setLoading(false);
-    }, 800);
+      setIsInitialLoad(false);
+    }, 400); // Reduced delay for better responsiveness
+
+    return () => {
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+      }
+    };
   }, [categoryName, sortBy, priceRange, selectedSizes, selectedColors, inStockOnly]);
 
   const toggleSize = (size: string) => {
@@ -182,25 +200,30 @@ export function Category() {
               {filteredProducts.length} producto{filteredProducts.length !== 1 ? "s" : ""}
             </p>
 
-            {loading ? (
+            {isInitialLoad ? (
               <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-3 gap-6">
-                {Array.from({ length: 9 }).map((_, i) => (
+                {Array.from({ length: 6 }).map((_, i) => (
                   <ProductSkeleton key={i} />
                 ))}
               </div>
-            ) : filteredProducts.length === 0 ? (
-              <div className="text-center py-16">
-                <p className="text-gray-500 text-lg">
-                  No se encontraron productos con los filtros seleccionados
-                </p>
-              </div>
             ) : (
-              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-3 gap-6">
-                {filteredProducts.map((product) => (
-                  <ProductCard key={product.id} {...product} />
-                ))}
+              <div className={`transition-opacity duration-300 ${loading ? "opacity-50" : "opacity-100"}`}>
+                {filteredProducts.length === 0 ? (
+                  <div className="text-center py-16">
+                    <p className="text-gray-500 text-lg">
+                      No se encontraron productos con los filtros seleccionados
+                    </p>
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-3 gap-6">
+                    {filteredProducts.map((product) => (
+                      <ProductCard key={product.id} {...product} />
+                    ))}
+                  </div>
+                )}
               </div>
             )}
+
           </div>
         </div>
       </div>

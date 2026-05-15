@@ -164,8 +164,8 @@ export function Header() {
         </div>
 
         {/* Navigation menu */}
-        <nav className="border-t border-[#F5F5F5]">
-          <ul className="flex items-center justify-center gap-8 h-14">
+        <nav className="border-t border-[#F5F5F5] overflow-x-auto overflow-y-hidden scrollbar-hide">
+          <ul className="flex items-center justify-start md:justify-center gap-6 md:gap-8 h-14 px-4 md:px-0 min-w-max md:min-w-0">
             <li>
               <Link
                 to="/categoria/mujer"
@@ -210,7 +210,7 @@ export function Header() {
         </nav>
 
         {/* Mobile search */}
-        <div className="md:hidden py-3 border-t border-[#F5F5F5]">
+        <div className="md:hidden py-3 px-4 border-t border-[#F5F5F5]">
           <form onSubmit={handleSearch}>
             <div className="relative">
               <input
